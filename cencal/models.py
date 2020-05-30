@@ -9,6 +9,7 @@ class Event(models.Model):
     date = models.DateField('date')
     title = models.CharField(max_length=50)
     description = models.TextField('description')
+    color = models.TextField('color')
     start_time = models.TimeField('start_time')
     end_time = models.TimeField('end_time')
     author = models.TextField('author')
@@ -33,11 +34,11 @@ class Event(models.Model):
 
     def clean(self):
         if self.start_time >= self.end_time:
-            raise ValidationError('<div class="formerror">종료시간은 시작시간보다 나중이어야 합니다.</div>')
+            raise ValidationError('<div class="info">종료시간은 시작시간보다 나중이어야 합니다.</div>')
 
         events = Event.objects.filter(date=self.date)
         if events.exists():
             for event in events:
                 if self.check_overlap(event.start_time, event.end_time, self.start_time, self.end_time):
                     raise ValidationError(
-                        '<div class="formerror">다른 이벤트와 시간대가 겹칩니다 : <br><strong>' + str(event.title) + "</strong><br>" + str(event.date) + ', ' + str(event.start_time) + '-' + str(event.end_time) + "</div>")
+                        '<div class="info">다른 이벤트와 시간대가 겹칩니다 : <br><strong>' + str(event.title) + "</strong><br>" + str(event.date) + ', ' + str(event.start_time) + '-' + str(event.end_time) + "</div>")

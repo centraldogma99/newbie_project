@@ -61,6 +61,12 @@
                 name: "description",
                 value: "세부사항 입력"
             })));
+            form.append($("<strong>").html("색상"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "color",
+                type: "color",
+                value: "#0000ff"
+            })));
             form.append($("<strong>").html("시작 시간"));
             form.append($("<p></p>").html(jQuery('<input/>', {
                 name: "start_time",
@@ -178,6 +184,7 @@
                                 if (parseInt(event.fields.date.slice(8)) == parseInt(element.firstChild.data)){
                                     var a = document.createElement("p");
                                     a.innerHTML = event.fields.title;
+                                    a.style.color = event.fields.color;
                                     a.className = "events";
                                     this.appendChild(a);
                                 }
@@ -254,7 +261,7 @@
                     console.log(response);
                     refreshCalendarAjax(year, month);                         
                     listevent(year, month, day);
-                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', "일정 등록 성공!" );
+                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
                 },
                 error: function(data){
                     if (data.status == 599) {

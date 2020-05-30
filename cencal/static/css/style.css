@@ -21,10 +21,9 @@
 
 .events {
     font-size: 10px;
-    color: #0000ff;
 }
 
-.formerror {
+.info {
     background-color: #FF9B9B;
     border : 1px solid black;
     padding : 7px;
