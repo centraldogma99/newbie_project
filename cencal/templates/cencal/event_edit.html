@@ -1,0 +1,14 @@
+{% extends base.html %}
+    <form method = "POST" class="post-form">
+        {% if title %}
+		    <h1>Edit : {{ title }}</h1>
+	    {% else %}
+		    <h1>New Event</h1>
+	    {% endif %}
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button type="submit" class="save btn btn-default">
+			Save
+		</button>
+	</form>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "cencal/base.html" %}
+
+{% block content %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    <input type="button" id="prev" value="Prev" class="movemonth">
+    <input type="button" id="next" value="Next" class="movemonth">
+    <div id="contentWrapper">
+        <div id="calendar">
+        </div>
+
+        <div id="sidebar"></div>
+    </div>
+
+    <script type="text/javascript">   
+        function getMonthFromString(mon){
+           let d = Date.parse(mon + "1, 2020");
+           if(!isNaN(d)){
+              return new Date(d).getMonth() + 1;
+           }
+           return -1;
+         }
+        
+        //이벤트 생성/수정 폼 HTML 생성
+        function getEventForm(formtype,year,month,day){
+            var form;
+            if (formtype == "make"){
+                form = jQuery('<form/>', {
+                    id: "makeEventForm",
+                    action: "{% url 'makeevent' %}",
+                    method: "POST"
+                });
+                form.append($("<h3>").html("일정 추가"));
+            } else if(formtype == "detail"){
+                form = jQuery('<form/>', {
+                    id: "makeEventForm",
+                    action: "{% url 'detailevent' %}",
+                    method: "POST"
+                });
+                form.append($("<h3>").html("일정"))
+            }
+            form.append($("<strong>").html("날짜"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "date",
+                type: "date",
+                value: year+"-"+month+"-"+day
+            })));
+            form.append($("<strong>").html("일정 이름"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "title",
+                type: "text",
+                value: "이름 입력"
+            })));
+            form.append($("<strong>").html("세부사항"));
+            form.append($("<p></p>").html(jQuery('<textarea/>', {
+                name: "description",
+                value: "세부사항 입력"
+            })));
+            form.append($("<strong>").html("시작 시간"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "start_time",
+                type: "time",
+                value: "시작시간 입력"
+            })));
+            form.append($("<strong>").html("종료 시간"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "end_time",
+                type: "time",
+                value: "완료시간 입력"
+            })));
+            form.append($("<strong>").html("작성자"));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "author",
+                type: "text",
+                value: "이름 입력"
+            })));
+            form.append($("<p></p>").html(jQuery('<input/>', {
+                name: "submit",
+                type: "submit",
+                value: "등록"
+            })));
+            return form;
+        }
+        
+        //달력의 현재 년/월 뽑아내기
+        function getYearMonthFromCalendar(){
+            let str = $("th.month").text();
+            let year = Number(str.slice(-4));
+            let month = getMonthFromString(str.slice(0,-5));
+            var arr = [year, month]
+            return arr    //배열반환 이케하는거맞나
+        }
+        
+        //폼 만들어주는 함수. 이벤트 생성 버튼 눌렀을 때
+        function makeEventClick(day){
+            var arr = getYearMonthFromCalendar();
+            var year = arr[0];
+            var month = arr[1];
+            var month_str = "";
+            if (month < 10){
+                month_str = "0" + month;
+            } else {
+                month_str = month;
+            }
+            var day_str = "";
+            if (day < 10){
+                day_str = "0" + day;
+            } else {
+               day_str = day;
+            }
+            
+            var form = getEventForm("make", year, month_str, day_str);
+            
+            $("#sidebar").empty();
+            $("#sidebar").append(form);
+            document.getElementById("makeEventForm").insertAdjacentHTML( 'afterbegin', '{% csrf_token %}' );
+            
+            //처리할 함수 내에ㅐㅔ서는 이 폼의 정보를 뷰로 AJAX 형태로 보낸다.
+            form[0].addEventListener('submit', makeEvent);
+            //form[0]이라 한것은 form 변수가 form객체가 아니다. w.fn.init 이라고 되어있는데, 이 변수의 [0]번쨰 엘리먼트가 폼이라 이렇게 함.
+            
+            //div = document.getElementById("sidebar");
+            //div.textContent = "";
+            //div.insertAdjacentHTML( 'beforeend', str );
+            
+            /*
+            let year = event.target.parentNode.attr('year');
+            let month = event.target.parentNode.attr('month');
+            let day = event.target.parentNode.attr('day');
+            
+            $.ajax({
+                type: "POST",
+                url: "{% url 'makeevent' %}",
+                data: {'year':year, 'month':month, 'day':day, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: "json",
+                success: function(response){
+                    console.log("success makeevent");
+                    response.form
+                },
+                error: function(request,status,error){
+                    console.log(error);
+                },
+            });
+            */
+        }
+        
+        //달력 REFRESH
+        //year, month 정수일 필요 없음
+        var refreshCalendarAjax = function(year,month){
+            $.ajax({
+                type: "POST",
+                url: "{% url 'calbuilder' %}",
+                data: {'year':year, 'month':month, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: "json",
+                success: function(response){
+                    console.log("success");
+                    $("#calendar").html(response.calendar);
+                    $("td").click(dayClick);
+                    events = JSON.parse(response.events);
+                    if(events.length > 0){
+                        Array.prototype.forEach.bind(document.getElementsByTagName("td"),function(element){
+                            /*
+                            for(var event in events){
+                                if (parseInt(event.fields.date.slice(8)) == element.innerHTML){
+                                    var a = document.createElement("p");
+                                    a.innerHTML = event.fields.title;
+                                    a.className = "events";
+                                    element.appendChlid(a);
+                                }
+                            }
+                            */
+                            events.forEach(function(event){
+                                if (parseInt(event.fields.date.slice(8)) == parseInt(element.firstChild.data)){
+                                    var a = document.createElement("p");
+                                    a.innerHTML = event.fields.title;
+                                    a.className = "events";
+                                    this.appendChild(a);
+                                }
+                            }, element)
+                        })();
+                    }
+                },
+                error: function(request,status,error){
+                    console.log(error);
+                },
+            });
+        }
+        
+        function listevent(year, month, day){
+            $.ajax({
+                type: "POST",
+                url: "{% url 'listevent' %}",
+                data: {'year':year, 'month':month, 'day':day, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: "json",
+                async: false,
+                success: function(response){
+                    $("#sidebar").attr('year', year);
+                    $("#sidebar").attr('month', month);
+                    $("#sidebar").attr('day', day);
+                    console.log("success sidebar listevent");
+                    events = JSON.parse(response.events)
+                    var str = "<h4>"+year+"/"+month+"/"+day+"</h4><br>"
+                    if(events.length > 0){
+                         events.forEach(event => str += (event['fields']['start_time']+" - "+event['fields']['title']+"<br>"));
+                    } else {
+                        str += "일정이 없습니다."
+                    }
+                    $("#sidebar").html(str);
+                    var btn = $("<button></button>").html("새 일정");
+                    btn.click(function(){
+                        makeEventClick(day);
+                    });
+                    $("#sidebar").append(btn);
+                },
+                error: function(request,status,error){
+                       console.log(error);
+                },
+            });
+        }
+        
+        function dayClick(target){
+            let arr = getYearMonthFromCalendar();
+            let year = arr[0];
+            let month = arr[1];
+            var day = 0;
+            if (event.target.tagName != "TD"){    //안에 있는 것들을 눌렀을 떄.
+                day = event.target.parentNode.firstChild.data;
+            } else {
+                day = event.target.firstChild.data;
+            }
+            
+            if (event.target.className != "noday"){
+                listevent(year, month, day);
+            }
+        }
+        
+        //makeEventClick이 만든 폼 제출을 처리하는 AJAX
+        function makeEvent(event){
+            event.preventDefault();
+            var year = event.target.childNodes[3].children[0].value.slice(0,4);
+            var month = event.target.childNodes[3].children[0].value.slice(5,7);
+            var day = event.target.childNodes[3].children[0].value.slice(8,10);
+            var form = $("#makeEventForm");
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response){
+                    console.log(response);
+                    refreshCalendarAjax(year, month);                         
+                    listevent(year, month, day);
+                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', "일정 등록 성공!" );
+                },
+                error: function(data){
+                    if (data.status == 599) {
+                        listevent(year, month, day);
+                        errors = JSON.parse(data.responseJSON.error);
+                        errors['__all__'].forEach(function(error){
+                             document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', error['message'] );
+                        })
+                    } else {
+                        alert("code:"+data.status+"\n"+"message:"+data.status+"\n"+"error:"+data.error);
+                    }
+                },
+            });
+        }
+
+        var calendarMoveMonth = function(){
+            var year = 0;
+            var month = 0;
+            if($(this).attr('class') == 'movemonth'){    //버튼 누른 경우
+                let arr = getYearMonthFromCalendar();
+                year = arr[0]
+                month = arr[1]
+                if($(this).attr('id') == 'prev'){
+                    if(month == 1){
+                        month = 12;
+                        year -= 1;
+                    } else {
+                        month -= 1;
+                    }
+                } else if($(this).attr('id') == 'next'){
+                    if(month == 12){
+                        month = 1;
+                        year += 1;
+                    } else {
+                        month += 1;
+                    }
+                }
+            } else {    //로딩시
+                let d = new Date();
+                month = d.getMonth() + 1;
+                year = d.getYear() + 1900;
+            }
+            
+            refreshCalendarAjax(year,month);
+        };
+        
+        
+        $(".movemonth").click(calendarMoveMonth);
+        $("td").click(dayClick);
+        window.onload = function(){
+            var today = new Date();
+            var year = today.getYear()+1900;
+            var month = today.getMonth()+1;
+            refreshCalendarAjax(year,month);
+        }
+    </script>
+{% endblock %}

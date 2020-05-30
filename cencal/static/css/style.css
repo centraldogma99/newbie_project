@@ -1,0 +1,32 @@
+#siteTitle {
+    font-family: 맑은고딕;
+    
+}
+
+#contentWrapper {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+#calendar {
+    flex: none;
+    max-width: 1100px;
+}
+
+#sidebar {
+    flex: 1 0 20%;
+    padding-left: 20px;
+}
+
+.events {
+    font-size: 10px;
+    color: #0000ff;
+}
+
+.formerror {
+    background-color: #FF9B9B;
+    border : 1px solid black;
+    padding : 7px;
+    display: inline-block;
+}
