@@ -1,5 +1,5 @@
 {% extends "cencal/base.html" %}
-
+{% load static %}
 {% block content %}
     {% for field in form %}
         {% for error in field.errors %}
@@ -25,74 +25,12 @@
            }
            return -1;
          }
-        
+        /*
         //이벤트 생성/수정 폼 HTML 생성
         function getEventForm(formtype,year,month,day){
-            var form;
-            if (formtype == "make"){
-                form = jQuery('<form/>', {
-                    id: "makeEventForm",
-                    action: "{% url 'makeevent' %}",
-                    method: "POST"
-                });
-                form.append($("<h3>").html("일정 추가"));
-            } else if(formtype == "detail"){
-                form = jQuery('<form/>', {
-                    id: "makeEventForm",
-                    action: "{% url 'detailevent' %}",
-                    method: "POST"
-                });
-                form.append($("<h3>").html("일정"))
-            }
-            form.append($("<strong>").html("날짜"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "date",
-                type: "date",
-                value: year+"-"+month+"-"+day
-            })));
-            form.append($("<strong>").html("일정 이름"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "title",
-                type: "text",
-                value: "이름 입력"
-            })));
-            form.append($("<strong>").html("세부사항"));
-            form.append($("<p></p>").html(jQuery('<textarea/>', {
-                name: "description",
-                value: "세부사항 입력"
-            })));
-            form.append($("<strong>").html("색상"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "color",
-                type: "color",
-                value: "#0000ff"
-            })));
-            form.append($("<strong>").html("시작 시간"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "start_time",
-                type: "time",
-                value: "시작시간 입력"
-            })));
-            form.append($("<strong>").html("종료 시간"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "end_time",
-                type: "time",
-                value: "완료시간 입력"
-            })));
-            form.append($("<strong>").html("작성자"));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "author",
-                type: "text",
-                value: "이름 입력"
-            })));
-            form.append($("<p></p>").html(jQuery('<input/>', {
-                name: "submit",
-                type: "submit",
-                value: "등록"
-            })));
-            return form;
+            $('#sidebar').load("{% static 'cencal/eventform.html' %}");
         }
-        
+        */
         //달력의 현재 년/월 뽑아내기
         function getYearMonthFromCalendar(){
             let str = $("th.month").text();
@@ -104,6 +42,7 @@
         
         //폼 만들어주는 함수. 이벤트 생성 버튼 눌렀을 때
         function makeEventClick(day){
+            var form;
             var arr = getYearMonthFromCalendar();
             var year = arr[0];
             var month = arr[1];
@@ -119,40 +58,25 @@
             } else {
                day_str = day;
             }
+            var date = year + "-" + month_str + "-" + day_str
             
-            var form = getEventForm("make", year, month_str, day_str);
-            
-            $("#sidebar").empty();
-            $("#sidebar").append(form);
-            document.getElementById("makeEventForm").insertAdjacentHTML( 'afterbegin', '{% csrf_token %}' );
-            
-            //처리할 함수 내에ㅐㅔ서는 이 폼의 정보를 뷰로 AJAX 형태로 보낸다.
-            form[0].addEventListener('submit', makeEvent);
-            //form[0]이라 한것은 form 변수가 form객체가 아니다. w.fn.init 이라고 되어있는데, 이 변수의 [0]번쨰 엘리먼트가 폼이라 이렇게 함.
-            
-            //div = document.getElementById("sidebar");
-            //div.textContent = "";
-            //div.insertAdjacentHTML( 'beforeend', str );
-            
-            /*
-            let year = event.target.parentNode.attr('year');
-            let month = event.target.parentNode.attr('month');
-            let day = event.target.parentNode.attr('day');
-            
+            //ajax로 eventform render 를 받아오기
             $.ajax({
-                type: "POST",
                 url: "{% url 'makeevent' %}",
-                data: {'year':year, 'month':month, 'day':day, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                dataType: "json",
+                async: false,
                 success: function(response){
-                    console.log("success makeevent");
-                    response.form
+                    form = response;
+                    console.log("makeEventClick()");
+                    $("#sidebar").html(form);
+                    //$("#eventform > #id_date").val(date);
+                    document.getElementById("eventform").querySelector("#id_date").value = date; 
                 },
-                error: function(request,status,error){
-                    console.log(error);
-                },
+                error: function(data){
+                    console.log("error occured during loading makeevent form");
+                }
             });
-            */
+            
+            document.getElementById("eventform").addEventListener('submit', makeEvent);
         }
         
         //달력 REFRESH
@@ -213,7 +137,7 @@
                     events = JSON.parse(response.events)
                     var str = "<h4>"+year+"/"+month+"/"+day+"</h4><br>"
                     if(events.length > 0){
-                         events.forEach(event => str += (event['fields']['start_time']+" - "+event['fields']['title']+"<br>"));
+                         events.forEach(event => str += '<p class="eventlistelement">' + event['fields']['start_time']+" - "+event['fields']['title']+"</p>");
                     } else {
                         str += "일정이 없습니다."
                     }
@@ -225,7 +149,7 @@
                     $("#sidebar").append(btn);
                 },
                 error: function(request,status,error){
-                       console.log(error);
+                    console.log(error);
                 },
             });
         }
@@ -245,20 +169,44 @@
                 listevent(year, month, day);
             }
         }
-        
+        /*
+        function eventClick(target){
+            var arr = getYearMonthFromCalendar();
+            var year = arr[0];
+            var month = arr[1];
+            var month_str = "";
+            if (month < 10){
+                month_str = "0" + month;
+            } else {
+                month_str = month;
+            }
+            var day_str = "";
+            if (day < 10){
+                day_str = "0" + day;
+            } else {
+               day_str = day;
+            }
+            
+            var form = getEventForm("make", year, month_str, day_str);
+            
+            $("#sidebar").empty();
+            $("#sidebar").append(form);
+        }
+        */
         //makeEventClick이 만든 폼 제출을 처리하는 AJAX
         function makeEvent(event){
             event.preventDefault();
-            var year = event.target.childNodes[3].children[0].value.slice(0,4);
-            var month = event.target.childNodes[3].children[0].value.slice(5,7);
-            var day = event.target.childNodes[3].children[0].value.slice(8,10);
-            var form = $("#makeEventForm");
+            var year = event.target.querySelector("#id_date").value.slice(0,4);
+            var month = event.target.querySelector("#id_date").value.slice(5,7);
+            var day = event.target.querySelector("#id_date").value.slice(8,10);
+            var form = $("#eventform");
             $.ajax({
                 type: form.attr('method'),
                 url: form.attr('action'),
                 data: form.serialize(),
                 success: function(response){
-                    console.log(response);
+                    console.log("makeEvent() successful");
+                    console.log(response)
                     refreshCalendarAjax(year, month);                         
                     listevent(year, month, day);
                     document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
@@ -311,6 +259,7 @@
         
         $(".movemonth").click(calendarMoveMonth);
         $("td").click(dayClick);
+        //$(".eventlistelement").click(eventClick);
         window.onload = function(){
             var today = new Date();
             var year = today.getYear()+1900;

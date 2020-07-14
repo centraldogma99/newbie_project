@@ -37,7 +37,7 @@ def index(request):
 
 
 def makeevent(request):
-    if request.method == "POST" and request.is_ajax:
+    if request.method == "POST":
         print(request.POST)
         form = EventForm(request.POST)
         if form.is_valid():
@@ -52,7 +52,9 @@ def makeevent(request):
             jsonres.status_code = 599
             return jsonres
     else:
-        print("NOT POST");
+        print("not post")
+        form = EventForm()
+        return render(request, 'cencal/eventform.html', {'form': form})
 
 def listevent(request):
     year = int(request.POST.get('year', None))
