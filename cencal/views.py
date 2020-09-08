@@ -70,4 +70,8 @@ def listevent(request):
 
 
 def detailevent(request):
-    pass
+    idx = int(request.POST.get('idx', None))
+    date = int(request.POST.get('date', None))
+    events = Event.objects.filter(date__exact = date).order_by('start_time')
+    form = EventForm(request.POST, instance = events[idx])
+    return render(request, 'cencal/eventform.html', {'form': form})

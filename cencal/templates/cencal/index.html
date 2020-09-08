@@ -138,6 +138,11 @@
                     var str = "<h4>"+year+"/"+month+"/"+day+"</h4><br>"
                     if(events.length > 0){
                          events.forEach(event => str += '<p class="eventlistelement">' + event['fields']['start_time']+" - "+event['fields']['title']+"</p>");
+                        /*for(i=0; i<$(".eventlistelement").length; i++){
+                            $(".eventlistelement").eq(i).click(function(){
+                                detailevent(date, i)
+                            })
+                        }*/
                     } else {
                         str += "일정이 없습니다."
                     }
@@ -147,6 +152,7 @@
                         makeEventClick(day);
                     });
                     $("#sidebar").append(btn);
+                    $(".eventlistelement").eq()
                 },
                 error: function(request,status,error){
                     console.log(error);
