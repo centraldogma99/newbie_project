@@ -18,6 +18,7 @@
     </div>
 
     <script type="text/javascript">   
+        //Jan, Feb와 같은 형태의 월을 숫자(1,2)로 변환
         function getMonthFromString(mon){
            let d = Date.parse(mon + "1, 2020");
            if(!isNaN(d)){
@@ -58,7 +59,7 @@
             } else {
                day_str = day;
             }
-            var date = year + "-" + month_str + "-" + day_str
+            var date = year + "-" + month_str + "-" + day_str;
             
             //ajax로 eventform render 를 받아오기
             $.ajax({
@@ -72,7 +73,7 @@
                     document.getElementById("eventform").querySelector("#id_date").value = date; 
                 },
                 error: function(data){
-                    console.log("error occured during loading makeevent form");
+                    console.log("error occured while loading makeevent form");
                 }
             });
             
@@ -92,6 +93,7 @@
                     $("#calendar").html(response.calendar);
                     $("td").click(dayClick);
                     events = JSON.parse(response.events);
+                    //이벤트들을 맞는 날짜들에 등록
                     if(events.length > 0){
                         Array.prototype.forEach.bind(document.getElementsByTagName("td"),function(element){
                             /*
@@ -122,6 +124,8 @@
             });
         }
         
+        //날짜 클릭 시, 그 날짜에 등록된 일정들을 오른쪽에 표시
+        //dayClick 이벤트 리스너에 의해 실행된다.
         function listevent(year, month, day){
             $.ajax({
                 type: "POST",
@@ -160,6 +164,8 @@
             });
         }
         
+        //날짜 클릭 시의 동작 구현
+        //listevent 함수 실행
         function dayClick(target){
             let arr = getYearMonthFromCalendar();
             let year = arr[0];
@@ -170,7 +176,7 @@
             } else {
                 day = event.target.firstChild.data;
             }
-            
+            //빈칸 클릭했을때
             if (event.target.className != "noday"){
                 listevent(year, month, day);
             }
@@ -212,7 +218,7 @@
                 data: form.serialize(),
                 success: function(response){
                     console.log("makeEvent() successful");
-                    console.log(response)
+                    console.log(response);
                     refreshCalendarAjax(year, month);                         
                     listevent(year, month, day);
                     document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
