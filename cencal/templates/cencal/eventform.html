@@ -1,0 +1,58 @@
+
+<!--
+<form id = "eventform" method = "POST">  
+    <strong>날짜</strong> 
+    <p>
+        <input type="date" name="date" value="{{ date }}">    
+    </p>
+    
+    <strong>일정 이름</strong>
+    <p>
+        <input type="text" name="title"><input type="color" name="color" value="{{ color }}">
+    </p>
+    
+    <strong>세부사항</strong>
+    <p>
+        <textarea name="description">{{ description }}</textarea>
+    </p>
+    
+    <strong>시작 시간</strong>
+    <p>
+        <input name="start_time" type="time" value="{{ start_time }}">
+    </p>
+    
+    <strong>종료 시간</strong>
+    <p>
+        <input name="end_time" type="time" value="{{ end_time }}">
+    </p>
+    <strong>작성자</strong>
+    <p>
+        <input type="text" name="author" value="{{ author }}">
+    </p>
+            
+    <p>
+        <input type="submit" name="submit" value="등록">
+    </p>
+</form>
+-->
+    <h3>
+        새 일정 등록
+</h3><br>
+    <form method = "POST" class="post-form" id="eventform" action="{% url 'makeevent' %}">
+        {% csrf_token %}
+
+        {% for hidden_field in form.hidden_fields %}
+        {{ hidden_field }}
+        {% endfor %}
+
+        {% for field in form.visible_fields %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
