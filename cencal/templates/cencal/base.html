@@ -11,6 +11,12 @@
         <h1 id = "siteTitle">
             TEST Calendar
         </h1>
+        {% if user.is_authenticated %}
+            <p class="top-menu">Hello, {{ user.username }}</p>
+            <a href="{% url 'logout' %}" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
+        {% else %}
+            <a href="{% url 'login' %}" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
+        {% endif %}
         {% block content %}
         {% endblock %}   
     </body>

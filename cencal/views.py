@@ -8,6 +8,7 @@ from .models import Event
 from .forms import EventForm
 import json
 from datetime import date
+from django.contrib.auth.decorators import login_required
 
 
 def calbuilder(request):
@@ -35,7 +36,7 @@ def index(request):
     return render(request, 'cencal/index.html')
 
 
-
+@login_required
 def makeevent(request):
     if request.method == "POST":
         print(request.POST)
