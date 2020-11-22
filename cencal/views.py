@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
+from django.template import Context
 from calendar import HTMLCalendar
 import calendar
 from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from .models import Event
-from .forms import EventForm
+from .forms import EventForm, SignupForm
 import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
@@ -41,8 +42,11 @@ def makeevent(request):
     if request.method == "POST":
         print(request.POST)
         form = EventForm(request.POST)
+        
         if form.is_valid():
             print("valid")
+            form = form.save(commit=False)
+            form.author = request.user
             form.save()
             jsonres = JsonResponse({"res": "successful"})
             jsonres.status_code = 200
@@ -63,11 +67,12 @@ def listevent(request):
     day = int(request.POST.get('day', None))
     
     events = Event.objects.filter(date__exact = date(year,month,day)).order_by('start_time')
-    events_json = serializers.serialize('json', events)
-    context = {
-        'events': events_json
-    }
-    return HttpResponse(json.dumps(context), content_type = 'application/json')
+    return render(request, 'cencal/sidebar.html', {"plans":events})
+    # events_json = serializers.serialize('json', events)
+    # context = {
+    #     'events': events_json
+    # }
+    # return HttpResponse(json.dumps(context), content_type = 'application/json')
 
 
 def detailevent(request):
@@ -76,3 +81,19 @@ def detailevent(request):
     events = Event.objects.filter(date__exact = date).order_by('start_time')
     form = EventForm(request.POST, instance = events[idx])
     return render(request, 'cencal/eventform.html', {'form': form})
+
+def signup(request):
+    if request.method == "POST":
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.set_password(user.password)
+            user.save()
+            
+            #username = form.cleaned_data.get('username')
+            #raw_password = form.cleaned_data.get('password')
+            #user = User.objects.create_user(username=username, password=raw_password)
+        return redirect("index")
+    else:
+        form = SignupForm()
+        return render(request, 'registration/signup.html', {'form':form})

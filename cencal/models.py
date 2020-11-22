@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 
 class Event(models.Model):
@@ -12,7 +13,7 @@ class Event(models.Model):
     color = models.TextField('color')
     start_time = models.TimeField('start_time')
     end_time = models.TimeField('end_time')
-    author = models.TextField('author')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.title
@@ -20,6 +21,7 @@ class Event(models.Model):
     class Meta:
         verbose_name = "Scheduling"
         verbose_name_plural = "Scheduling"
+        
 
     def check_overlap(self, fixed_start, fixed_end, new_start, new_end):
         overlap = False

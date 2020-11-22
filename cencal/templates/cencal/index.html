@@ -10,6 +10,13 @@
     {% endfor %}
     <input type="button" id="prev" value="Prev" class="movemonth">
     <input type="button" id="next" value="Next" class="movemonth">
+    {% if user.is_authenticated %}
+            <p class="top-menu">Hello, {{ user.username }}</p>
+            <a href="{% url 'logout' %}" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
+        {% else %}
+            <a href="{% url 'login' %}" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
+            <a href="{% url 'signup' %}" class="top-menu">Sign Up</a>
+        {% endif %}
     <div id="contentWrapper">
         <div id="calendar">
         </div>
@@ -131,34 +138,47 @@
                 type: "POST",
                 url: "{% url 'listevent' %}",
                 data: {'year':year, 'month':month, 'day':day, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                dataType: "json",
                 async: false,
                 success: function(response){
+                    $("#sidebar").html(response);
+                    $("#sidebar").attr('year', year);
+                    $("#sidebar").attr('month', month);
+                    $("#sidebar").attr('day', day);
+                    $("#newEventBtn").click(function(){
+                        makeEventClick(day);
+                    })
+                    /*
                     $("#sidebar").attr('year', year);
                     $("#sidebar").attr('month', month);
                     $("#sidebar").attr('day', day);
                     console.log("success sidebar listevent");
                     events = JSON.parse(response.events)
-                    var str = "<h4>"+year+"/"+month+"/"+day+"</h4><br>"
+                    var str = "<h3>"+year+"/"+month+"/"+day+"</h3><br>"
                     if(events.length > 0){
-                         events.forEach(event => str += '<p class="eventlistelement">' + event['fields']['start_time']+" - "+event['fields']['title']+"</p>");
-                        /*for(i=0; i<$(".eventlistelement").length; i++){
+                         events.forEach(event => str += '<p class="eventlistelement" style="color:'+ event['fields']['color'] +';">' + event['fields']['start_time']+" - "+event['fields']['title']+"</p>");
+                        for(i=0; i<$(".eventlistelement").length; i++){
                             $(".eventlistelement").eq(i).click(function(){
                                 detailevent(date, i)
                             })
-                        }*/
+                        }
                     } else {
-                        str += "일정이 없습니다."
+                        str += "일정이 없습니다.<br><br>"
                     }
                     $("#sidebar").html(str);
-                    var btn = $("<button></button>").html("새 일정");
-                    btn.click(function(){
-                        makeEventClick(day);
-                    });
-                    $("#sidebar").append(btn);
+                    {% if user.is_authenticated %}
+                        var btn = $("<button></button>").html("새 일정");
+                        btn.click(function(){
+                            makeEventClick(day);
+                        });
+                         $("#sidebar").append(btn);
+                    {% endif %}
+                    
                     $(".eventlistelement").eq()
+                     */
                 },
                 error: function(request,status,error){
+                    console.log(status);
+                    console.log(request);
                     console.log(error);
                 },
             });
