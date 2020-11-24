@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template import Context
+from django.template.loader import render_to_string
 from calendar import HTMLCalendar
 import calendar
 from django.utils import timezone
@@ -10,6 +11,7 @@ from .forms import EventForm, SignupForm
 import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
+import copy
 
 
 def calbuilder(request):
@@ -17,7 +19,7 @@ def calbuilder(request):
     month = int(request.POST.get('month',None))
     cal = HTMLCalendar(calendar.SUNDAY)
     cal = cal.formatmonth(year, month)
-    cal = cal.replace('<td ', '<td  width="150" height="150"')
+    cal = cal.replace('<td ', '<td class="days" width="150" height="150"')
     cal = cal.replace('border="0" cellpadding="0" cellspacing="0" class="month">','class="table">')
     events = Event.objects.filter(date__year = year, date__month = month)
     events_json = serializers.serialize('json', events)
@@ -29,11 +31,13 @@ def calbuilder(request):
 
 
 #첫 접속시 첫화면 출력용 뷰. 달력은 HTML 내의 AJAX가 처리한다.
-def index(request):
+def index(request, sidebarContent=None):
     #cal = HTMLCalendar(calendar.SUNDAY)
     #cal = cal.formatmonth(year, month)
     #cal = cal.replace('<td ', '<td  width="150" height="150"')
     #cal = cal.replace('border="0" cellpadding="0" cellspacing="0" class="month">','class="table">')
+    if sidebarContent!=None:
+        return render(request, 'cencal/index.html', {'sidebarContent':sidebarContent})
     return render(request, 'cencal/index.html')
 
 
@@ -75,12 +79,51 @@ def listevent(request):
     # return HttpResponse(json.dumps(context), content_type = 'application/json')
 
 
-def detailevent(request):
-    idx = int(request.POST.get('idx', None))
-    date = int(request.POST.get('date', None))
-    events = Event.objects.filter(date__exact = date).order_by('start_time')
-    form = EventForm(request.POST, instance = events[idx])
-    return render(request, 'cencal/eventform.html', {'form': form})
+def detailevent(request, pk=None):
+    pk2=0
+    if pk==None:
+        pk2 = int(request.POST.get('pk', None))
+        event = get_object_or_404(Event, pk=pk2)
+    else:
+        event = get_object_or_404(Event, pk=pk)
+    
+    return render(request, 'cencal/detailevent.html', {'event': event})
+
+@login_required   
+def event_edit(request, pk=None):
+    pk2=0
+    if pk==None:
+        pk2 = int(request.GET.get('pk', None))
+    else:
+        pk2 = pk
+    event = get_object_or_404(Event, pk=pk2)
+    if request.method == "POST":
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.author = request.user
+            event.save()
+            return render(request, 'cencal/index.html', {'sidebarContent':render_to_string('cencal/detailevent.html', {'event': event})})
+            # return redirect('detailevent', pk=event.pk)
+        else:
+            # alert로 경고메시지 출력?
+            return redirect('index')
+    else:
+        print("else")
+        form = EventForm(instance=event)
+        return render(request, 'cencal/eventform.html', {'form':form, 'edit':"true", 'pk':pk2})
+
+    
+@login_required
+def event_remove(request, pk=None):
+    pk2 = 0
+    if pk==None:
+        pk2 = int(request.POST.get('pk', None))
+    else:
+        pk2 = pk
+    event = get_object_or_404(Event, pk=pk2)
+    event.delete()
+    return HttpResponse('')
 
 def signup(request):
     if request.method == "POST":

@@ -35,11 +35,21 @@
     </p>
 </form>
 -->
-        
+{% if edit %}
+    <h3>
+        일정 수정
+</h3>
+{% else %}
     <h3>
         새 일정 등록
-</h3><br>
+</h3>
+{% endif %}<br>
+{% if edit %}
+    <form method = "POST" class="post-form" id="eventform" action="/event/{{ pk }}/edit">
+{% else %}
+            
     <form method = "POST" class="post-form" id="eventform" action="{% url 'makeevent' %}">
+{% endif %}
         {% csrf_token %}
 
         {% for hidden_field in form.hidden_fields %}
@@ -56,5 +66,5 @@
         </div>
         {% endfor %}
     
-  <button type="submit" class="btn btn-primary">일정 만들기</button>
+  <button type="submit" class="btn btn-primary">{% if edit %}수정 완료{% else %}일정 만들기{% endif %}</button>
 </form>

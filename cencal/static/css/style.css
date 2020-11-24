@@ -1,11 +1,42 @@
 
 #siteTitle {
     font-family: 맑은고딕;
-    
+    margin-bottom: 15px;
+}
+
+#navBar {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+#userinfo {
+    margin-bottom: 10px;
+}
+
+.regbtn {
+    padding : 7px;
+    margin : 10px;
+    border-style: dotted;
+    border-width: 1px;
 }
 
 body {
     margin-left: 30px;
+}
+
+.days:hover{
+    background-color: #eeeeee;
+}
+
+.days p{
+    margin-top: 10px;
+    margin-bottom: 5px;
+    padding: 5px;
+    text-decoration: underline;
+}
+
+.days p:hover{
+    background-color: #cccccc;
 }
 
 #eventlist {

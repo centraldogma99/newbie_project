@@ -8,20 +8,28 @@
             </div>
         {% endfor %}
     {% endfor %}
-    <input type="button" id="prev" value="Prev" class="movemonth">
-    <input type="button" id="next" value="Next" class="movemonth">
-    {% if user.is_authenticated %}
-            <p class="top-menu">Hello, {{ user.username }}</p>
-            <a href="{% url 'logout' %}" class="top-menu"><span class="glyphicon glyphicon-log-in"></span></a>
+    
+    <div id="userInfo">
+        {% if user.is_authenticated %}
+            <p class="top-menu">Hello, {{ user.username }} <a href="{% url 'logout' %}" class="top-menu regbtn">Log Out</a></p>
         {% else %}
-            <a href="{% url 'login' %}" class="top-menu"><span class="glyphicon glyphicon-log-out"></span></a>
-            <a href="{% url 'signup' %}" class="top-menu">Sign Up</a>
+            <a href="{% url 'login' %}" class="top-menu regbtn" >Log In</a>
+            <a href="{% url 'signup' %}" class="top-menu regbtn">Sign Up</a>
         {% endif %}
+    </div>
+    <div id="navBar">
+        <input type="button" id="prev" value="Prev" class="movemonth">
+        <input type="button" id="next" value="Next" class="movemonth">
+    </div>
     <div id="contentWrapper">
         <div id="calendar">
         </div>
 
-        <div id="sidebar"></div>
+        <div id="sidebar">
+            {% if sidebarContent %}
+                {{ sidebarContent }}
+            {% endif %}
+        </div>
     </div>
 
     <script type="text/javascript">   
@@ -126,6 +134,71 @@
                     }
                 },
                 error: function(request,status,error){
+                    console.log(error);
+                },
+            });
+        }
+        
+        function detailEvent(pk){
+            $.ajax({
+                type: "POST",
+                url: "{% url 'detailevent' %}",
+                data: {'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                async: false,
+                success: function(response){
+                    $("#sidebar").html(response);
+                },
+                error: function(request,status,error){
+                    console.log(status);
+                    console.log(request);
+                    console.log(error);
+                },
+            });
+        }
+        
+        function editEvent(pk){
+            console.log("editEvent")
+            $.ajax({
+                type: "GET",
+                url: "{% url 'event_edit' %}",
+                data: {'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                async: false,
+                success: function(response){
+                    $("#sidebar").html(response);
+                    let year = $("#sidebar").prop("year");
+                    let month = $("#sidebar").prop("month");
+                    let day = $("#sidebar").prop("day");
+                    refreshCalendarAjax(year, month);
+                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 수정 성공!</div>' );
+                    listevent(year, month, day);
+                },
+                error: function(request,status,error){
+                    console.log(status);
+                    console.log(request);
+                    console.log(error);
+                },
+            });
+        }
+        
+        function removeEvent(pk){
+            console.log("removeEvent")
+            $.ajax({
+                type: "POST",
+                url: "{% url 'event_remove' %}",
+                data: {'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                async: false,
+                success: function(response){
+                    $("#sidebar").html(response);
+                    let year = $("#sidebar").prop("year");
+                    let month = $("#sidebar").prop("month");
+                    let day = $("#sidebar").prop("day");
+                    refreshCalendarAjax(year, month);
+                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 삭제 성공!</div>' );
+                    listevent(year, month, day);
+                },
+                error: function(request,status,error){
+                    console.log(status);
+                    console.log(request);
                     console.log(error);
                 },
             });
