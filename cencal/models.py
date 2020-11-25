@@ -40,6 +40,7 @@ class Event(models.Model):
 
         events = Event.objects.filter(date=self.date)
         if self.pk == None:
+            print("pknone")
             if events.exists():
                 for event in events:
                     if self.check_overlap(event.start_time, event.end_time, self.start_time, self.end_time):

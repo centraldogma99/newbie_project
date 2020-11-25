@@ -1,9 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template import Context
-from django.template.loader import render_to_string
+from django.http import QueryDict
 from calendar import HTMLCalendar
 import calendar
-from django.utils import timezone
 from django.http import HttpResponse, JsonResponse
 from django.core import serializers
 from .models import Event
@@ -11,7 +9,6 @@ from .forms import EventForm, SignupForm
 import json
 from datetime import date
 from django.contrib.auth.decorators import login_required
-import copy
 
 
 def calbuilder(request):
@@ -45,7 +42,7 @@ def index(request, sidebarContent=None):
 def makeevent(request):
     if request.method == "POST":
         print(request.POST)
-        form = EventForm(request.POST)
+        form = EventForm(QueryDict(request.POST['form']))
         
         if form.is_valid():
             print("valid")
@@ -93,21 +90,29 @@ def detailevent(request, pk=None):
 def event_edit(request, pk=None):
     pk2=0
     if pk==None:
-        pk2 = int(request.GET.get('pk', None))
+        if request.method == "POST":
+            pk2 = int(request.POST.get('pk', None))
+        else:
+            pk2 = int(request.GET.get('pk', None))
     else:
         pk2 = pk
     event = get_object_or_404(Event, pk=pk2)
     if request.method == "POST":
-        form = EventForm(request.POST, instance=event)
+        form = EventForm(QueryDict(request.POST['form']),instance=event)
         if form.is_valid():
             event = form.save(commit=False)
             event.author = request.user
             event.save()
-            return render(request, 'cencal/index.html', {'sidebarContent':render_to_string('cencal/detailevent.html', {'event': event})})
+            jsonres = JsonResponse({"res": "successful"})
+            jsonres.status_code = 200
+            return jsonres
+            # return render(request, 'cencal/index.html', {'sidebarContent':render_to_string('cencal/detailevent.html', {'event': event})})
             # return redirect('detailevent', pk=event.pk)
         else:
-            # alert로 경고메시지 출력?
-            return redirect('index')
+            print(form.errors.as_json())
+            jsonres = JsonResponse({"error": form.errors.as_json()})
+            jsonres.status_code = 599
+            return jsonres
     else:
         print("else")
         form = EventForm(instance=event)

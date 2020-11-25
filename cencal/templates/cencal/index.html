@@ -57,7 +57,49 @@
         }
         
         //폼 만들어주는 함수. 이벤트 생성 버튼 눌렀을 때
-        function makeEventClick(day){
+        // function makeEventClick(day){
+        //     var form;
+        //     var arr = getYearMonthFromCalendar();
+        //     var year = arr[0];
+        //     var month = arr[1];
+        //     var month_str = "";
+        //     if (month < 10){
+        //         month_str = "0" + month;
+        //     } else {
+        //         month_str = month;
+        //     }
+        //     var day_str = "";
+        //     if (day < 10){
+        //         day_str = "0" + day;
+        //     } else {
+        //        day_str = day;
+        //     }
+        //     var date = year + "-" + month_str + "-" + day_str;
+            
+        //     //ajax로 eventform render 를 받아오기
+        //     $.ajax({
+        //         url: "{% url 'makeevent' %}",
+        //         async: false,
+        //         success: function(response){
+        //             form = response;
+        //             console.log("makeEventClick()");
+        //             $("#sidebar").html(form);
+        //             //$("#eventform > #id_date").val(date);
+        //             document.getElementById("eventform").querySelector("#id_date").value = date; 
+        //         },
+        //         error: function(data){
+        //             console.log("error occured while loading makeevent form");
+        //         }
+        //     });
+            
+        //     document.getElementById("eventform").addEventListener('submit', makeEvent);
+        // }
+        
+        function makeEventClick(day, make, pk){
+            pk = (typeof pk !== 'undefined') ?  pk : "undefined"
+            // make/edit 이벤트에 대하여 해당하는 폼을 반환한다.
+            // day : 년/월/일의 '일'에 해당. 지금 요청하는 폼이 어떤 날짜의 폼인지를 알기 위해.
+            // make : boolean 값이다. true 이면 make, false이면 edit
             var form;
             var arr = getYearMonthFromCalendar();
             var year = arr[0];
@@ -78,21 +120,28 @@
             
             //ajax로 eventform render 를 받아오기
             $.ajax({
-                url: "{% url 'makeevent' %}",
+                type: "GET",
+                url: make ? "{% url 'makeevent' %}" : "{% url 'event_edit' %}",
+                data : (make==true) ? {} : {'pk' : pk},
                 async: false,
                 success: function(response){
                     form = response;
-                    console.log("makeEventClick()");
                     $("#sidebar").html(form);
                     //$("#eventform > #id_date").val(date);
                     document.getElementById("eventform").querySelector("#id_date").value = date; 
+                    document.getElementById("eventform").addEventListener('submit', makeEvent);
                 },
                 error: function(data){
-                    console.log("error occured while loading makeevent form");
+                    console.log("error occured while loading form");
                 }
             });
+            // if (make){
+                
+            // }
+            // else{
+            //     document.getElementById("eventform").addEventListener('submit', editEvent);
+            // }
             
-            document.getElementById("eventform").addEventListener('submit', makeEvent);
         }
         
         //달력 REFRESH
@@ -139,7 +188,7 @@
             });
         }
         
-        function detailEvent(pk){
+        function detailEvent(pk, day){
             $.ajax({
                 type: "POST",
                 url: "{% url 'detailevent' %}",
@@ -147,30 +196,9 @@
                 async: false,
                 success: function(response){
                     $("#sidebar").html(response);
-                },
-                error: function(request,status,error){
-                    console.log(status);
-                    console.log(request);
-                    console.log(error);
-                },
-            });
-        }
-        
-        function editEvent(pk){
-            console.log("editEvent")
-            $.ajax({
-                type: "GET",
-                url: "{% url 'event_edit' %}",
-                data: {'pk': pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                async: false,
-                success: function(response){
-                    $("#sidebar").html(response);
-                    let year = $("#sidebar").prop("year");
-                    let month = $("#sidebar").prop("month");
-                    let day = $("#sidebar").prop("day");
-                    refreshCalendarAjax(year, month);
-                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 수정 성공!</div>' );
-                    listevent(year, month, day);
+                    $("#editEventBtn").click(function(){
+                        makeEventClick(day, false, pk);
+                    })
                 },
                 error: function(request,status,error){
                     console.log(status);
@@ -189,12 +217,13 @@
                 async: false,
                 success: function(response){
                     $("#sidebar").html(response);
-                    let year = $("#sidebar").prop("year");
-                    let month = $("#sidebar").prop("month");
-                    let day = $("#sidebar").prop("day");
+                    let year = $("#sidebar").attr("year");
+                    let month = $("#sidebar").attr("month");
+                    let day = $("#sidebar").attr("day");
                     refreshCalendarAjax(year, month);
-                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 삭제 성공!</div>' );
+                    
                     listevent(year, month, day);
+                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 삭제 성공!</div>' );
                 },
                 error: function(request,status,error){
                     console.log(status);
@@ -218,7 +247,12 @@
                     $("#sidebar").attr('month', month);
                     $("#sidebar").attr('day', day);
                     $("#newEventBtn").click(function(){
-                        makeEventClick(day);
+                        makeEventClick(day, true);
+                    })
+                    $(".eventListElem").each(function(index){
+                        $(this).click(function(){
+                            detailEvent($(this).attr("pk"), day);
+                        })
                     })
                     /*
                     $("#sidebar").attr('year', year);
@@ -299,6 +333,36 @@
         }
         */
         //makeEventClick이 만든 폼 제출을 처리하는 AJAX
+        // function makeEvent(event){
+        //     event.preventDefault();
+        //     var year = event.target.querySelector("#id_date").value.slice(0,4);
+        //     var month = event.target.querySelector("#id_date").value.slice(5,7);
+        //     var day = event.target.querySelector("#id_date").value.slice(8,10);
+        //     var form = $("#eventform");
+        //     $.ajax({
+        //         type: form.attr('method'),
+        //         url: form.attr('action'),
+        //         data: form.serialize(),
+        //         success: function(response){
+        //             console.log("makeEvent() successful");
+        //             console.log(response);
+        //             refreshCalendarAjax(year, month);                         
+        //             listevent(year, month, day);
+        //             document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
+        //         },
+        //         error: function(data){
+        //             if (data.status == 599) {
+        //                 listevent(year, month, day);
+        //                 errors = JSON.parse(data.responseJSON.error);
+        //                 errors['__all__'].forEach(function(error){
+        //                      document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', error['message'] );
+        //                 })
+        //             } else {
+        //                 alert("code:"+data.status+"\n"+"message:"+data.status+"\n"+"error:"+data.error);
+        //             }
+        //         },
+        //     });
+        // }
         function makeEvent(event){
             event.preventDefault();
             var year = event.target.querySelector("#id_date").value.slice(0,4);
@@ -308,13 +372,18 @@
             $.ajax({
                 type: form.attr('method'),
                 url: form.attr('action'),
-                data: form.serialize(),
+                data: form.attr('edit') ? {'form' : form.serialize(), 'pk' : form.attr("pk"), 'csrfmiddlewaretoken': '{{ csrf_token }}'} : {'form' : form.serialize(), 'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(response){
                     console.log("makeEvent() successful");
                     console.log(response);
                     refreshCalendarAjax(year, month);                         
                     listevent(year, month, day);
-                    document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
+                    //아래 메시지 make/edit별로 따로 출력해야 함.
+                    if (form.attr('edit')=="true"){
+                        document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 수정 완료!</div>' );
+                    }else{
+                        document.getElementById("sidebar").insertAdjacentHTML( 'afterbegin', '<div class="info">일정 등록 성공!</div>' );
+                    }
                 },
                 error: function(data){
                     if (data.status == 599) {

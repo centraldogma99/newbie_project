@@ -45,10 +45,10 @@
 </h3>
 {% endif %}<br>
 {% if edit %}
-    <form method = "POST" class="post-form" id="eventform" action="/event/{{ pk }}/edit">
+    <form method = "POST" class="post-form" id="eventform" action="{% url 'event_edit' %}" edit="true" pk= "{{ pk }}">
 {% else %}
             
-    <form method = "POST" class="post-form" id="eventform" action="{% url 'makeevent' %}">
+    <form method = "POST" class="post-form" id="eventform" action="{% url 'makeevent' %}" edit="false">
 {% endif %}
         {% csrf_token %}
 

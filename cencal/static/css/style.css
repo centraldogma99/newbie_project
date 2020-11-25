@@ -29,7 +29,8 @@ body {
 }
 
 .days p{
-    margin-top: 10px;
+    font-size: 10pt;
+    margin-top: 5px;
     margin-bottom: 5px;
     padding: 5px;
     text-decoration: underline;
