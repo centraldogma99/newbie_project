@@ -1,0 +1,15 @@
+<div id = "detailEventDiv">
+    <input type="button" id="editEventBtn" value="수정">
+    <input type="button" id="deleteEventBtn" onclick="removeEvent({{ event.pk }})" value="삭제">
+    <h3>
+        {{ event.title }}
+    </h3>
+    <p>{{ event.date }}</p>
+    <p>생성자 : {{ event.author.get_username }}</p>
+    <p>
+        시간 : {{ event.start_time }} ~ {{ event.end_time }}
+    </p>
+    <p>
+        세부사항 : {{ event.description }}
+    </p>
+</div>

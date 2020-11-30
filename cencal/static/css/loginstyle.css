@@ -1,0 +1,27 @@
+html, body{
+    height: 100%;
+}
+
+
+
+#loginWindow{
+    text-align: center;
+    max-width: 50%;
+    display: block;
+    border-style: solid;
+    padding: 40px;
+}
+
+#contentWrapper{
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    height: 100%;
+}
+#form{
+    
+}
+
+#title{
+    margin-bottom: 40px;
+}

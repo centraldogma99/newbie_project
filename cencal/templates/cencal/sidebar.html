@@ -1,0 +1,24 @@
+
+<div id="eventListDiv">
+    <h3 id="eventListDate">{{ year }} - {{ month }} - {{ day }}  ({{ wekday }})</h3>
+    {% if plans %}
+        <table id="eventlist" class="table">
+        {% for plan in plans %}
+            <tr class="eventListElem" pk = "{{ plan.pk }}" >
+                <td>{{ plan.start_time }}</td>
+                <td style="color:{{ plan.color }}">{{ plan.title }}</td>
+                <td>{{ plan.author.get_username }}</td>
+            </tr>
+		{% endfor %}
+        </table>
+	{% else %}
+		<p>일정이 없습니다.</p>
+	{% endif %}
+    {% if user.is_authenticated %} 
+    <input type="button" id="newEventBtn" value="새 일정 만들기">
+    {% else %}
+    <p>
+        일정을 추가하려면 로그인하세요.
+    </p>
+    {% endif %}
+</div>
