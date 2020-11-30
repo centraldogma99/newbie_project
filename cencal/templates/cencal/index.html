@@ -9,14 +9,7 @@
         {% endfor %}
     {% endfor %}
     
-    <div id="userInfo">
-        {% if user.is_authenticated %}
-            <p class="top-menu">Hello, {{ user.username }} <a href="{% url 'logout' %}" class="top-menu regbtn">Log Out</a></p>
-        {% else %}
-            <a href="{% url 'login' %}" class="top-menu regbtn" >Log In</a>
-            <a href="{% url 'signup' %}" class="top-menu regbtn">Sign Up</a>
-        {% endif %}
-    </div>
+    
     <div id="navBar">
         <input type="button" id="prev" value="Prev" class="movemonth">
         <input type="button" id="next" value="Next" class="movemonth">
@@ -174,7 +167,7 @@
                                 if (parseInt(event.fields.date.slice(8)) == parseInt(element.firstChild.data)){
                                     var a = document.createElement("p");
                                     a.innerHTML = event.fields.title;
-                                    a.style.color = event.fields.color;
+                                    a.style.background = event.fields.color;
                                     a.className = "events";
                                     this.appendChild(a);
                                 }
@@ -236,10 +229,13 @@
         //날짜 클릭 시, 그 날짜에 등록된 일정들을 오른쪽에 표시
         //dayClick 이벤트 리스너에 의해 실행된다.
         function listevent(year, month, day){
+            date = new Date(year,month-1,day)
+            
+            wekday = date.toLocaleDateString('kr-KO', {weekday:'short'})
             $.ajax({
                 type: "POST",
                 url: "{% url 'listevent' %}",
-                data: {'year':year, 'month':month, 'day':day, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                data: {'year':year, 'month':month, 'day':day, 'wekday':wekday, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 async: false,
                 success: function(response){
                     $("#sidebar").html(response);
@@ -304,7 +300,7 @@
                 day = event.target.firstChild.data;
             }
             //빈칸 클릭했을때
-            if (event.target.className != "noday"){
+            if (day != String.fromCharCode(160)){
                 listevent(year, month, day);
             }
         }

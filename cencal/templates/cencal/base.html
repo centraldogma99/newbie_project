@@ -8,11 +8,18 @@
         <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
     </head>
     <body>
-        <a href="{% url 'index' %}">
-            <h1 id = "siteTitle">
-                TEST Calendar
-            </h1>
+        <div id="userInfo">
+            <a href="{% url 'index' %}" class="noHover">
+            <p id = "siteTitle" style="display:inline">Dogma Calendar</p>
         </a>
+        {% if user.is_authenticated %}
+            <p id="greetings" class="top-menu">Hello, <b>{{ user.username }}</b></p> <a href="{% url 'logout' %}" class="top-menu regbtn">Log Out</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="top-menu regbtn" >Log In</a>
+            <a href="{% url 'signup' %}" class="top-menu regbtn">Sign Up</a>
+        {% endif %}
+    </div>
+        
         
         {% block content %}
         {% endblock %}   

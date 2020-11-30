@@ -16,7 +16,8 @@ def calbuilder(request):
     month = int(request.POST.get('month',None))
     cal = HTMLCalendar(calendar.SUNDAY)
     cal = cal.formatmonth(year, month)
-    cal = cal.replace('<td ', '<td class="days" width="150" height="150"')
+    print(cal)
+    cal = cal.replace('<td class="', '<td width="150" height="150" class="days ')
     cal = cal.replace('border="0" cellpadding="0" cellspacing="0" class="month">','class="table">')
     events = Event.objects.filter(date__year = year, date__month = month)
     events_json = serializers.serialize('json', events)
@@ -66,9 +67,10 @@ def listevent(request):
     year = int(request.POST.get('year', None))
     month = int(request.POST.get('month', None))
     day = int(request.POST.get('day', None))
+    wekday = request.POST.get('wekday', None)
     
     events = Event.objects.filter(date__exact = date(year,month,day)).order_by('start_time')
-    return render(request, 'cencal/sidebar.html', {"plans":events})
+    return render(request, 'cencal/sidebar.html', {"plans":events, "year":year, "month":month, "day":day, "wekday":wekday})
     # events_json = serializers.serialize('json', events)
     # context = {
     #     'events': events_json

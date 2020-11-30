@@ -1,28 +1,43 @@
 
 #siteTitle {
     font-family: 맑은고딕;
+    font-size: 30px;
     margin-bottom: 15px;
+    background-color: unset !important;
+    color: unset !important;
+    text-decoration: bold;
+}
+
+.noHover{
+    background-color: unset !important;
+    color: unset !important;
+    text-decoration: unset !important;
+    
 }
 
 #navBar {
+    padding-left: 30px;
     margin-top: 15px;
     margin-bottom: 15px;
 }
 
 #userinfo {
-    margin-bottom: 10px;
+    background-color: #eba134;
+    padding-top: 12px;
+    padding-bottom: 17px;
+    padding-left: 25px;
+    padding-right: 25px;
 }
 
 .regbtn {
-    padding : 7px;
-    margin : 10px;
+    padding: 5px;
+    font-weight: bold;
     border-style: dotted;
-    border-width: 1px;
+    border-width: 2px;
+    color: #ffffff;
+    margin-top: 7px;
 }
 
-body {
-    margin-left: 30px;
-}
 
 .days:hover{
     background-color: #eeeeee;
@@ -30,14 +45,26 @@ body {
 
 .days p{
     font-size: 10pt;
-    margin-top: 5px;
     margin-bottom: 5px;
-    padding: 5px;
-    text-decoration: underline;
+    padding: 4px;
+    border-radius: 7px;
+    color: #ffffff !important;
+    text-decoration: unset !important;
 }
 
 .days p:hover{
     background-color: #cccccc;
+}
+
+.sat{
+    color:#0000ff;
+}
+.sun{
+    color:#ff0000;
+}
+.month{
+    margin: auto;
+    font-size: 15pt;
 }
 
 #eventlist {
@@ -47,6 +74,7 @@ body {
 #contentWrapper {
     display: flex;
     flex-direction: row;
+    margin-left: 30px;
     height: 100%;
 }
 
@@ -58,7 +86,22 @@ body {
 #sidebar {
     max-width: 450px;
     flex: 1 0 20%;
-    padding-left: 20px;
+    padding-left: 35px;
+}
+
+#eventListDate {
+    margin-bottom : 25px;
+}
+
+.top-menu {
+    float: right;
+    margin-left: 9px;
+}
+
+#greetings {
+    font-size: 22px;
+    padding: 7px;
+    
 }
 
 .events {
